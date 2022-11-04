@@ -58,6 +58,8 @@ class WC_Pagarme_Credit_Card_Gateway extends WC_Payment_Gateway {
 		 *
 		 * @return void
 		 */
+		do_action( 'pagarmeSetCompany');
+
 		if (!is_null(WC()->session) && function_exists('get_field')) {
 
 			if (WC()->session->__isset('_company_cnpj')) {
