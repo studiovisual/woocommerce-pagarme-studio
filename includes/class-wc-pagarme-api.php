@@ -821,10 +821,29 @@ class WC_Pagarme_API {
 	 */
 	public function check_fingerprint( $ipn_response ) {
 		if ( isset( $ipn_response['id'] ) && isset( $ipn_response['current_status'] ) && isset( $ipn_response['fingerprint'] ) ) {
+			//gera o fingerprint para tentar 1x
 			$fingerprint = sha1( $ipn_response['id'] . '#' . $this->gateway->api_key );
 
 			if ( $fingerprint === $ipn_response['fingerprint'] ) {
 				return true;
+			} else {
+
+				//procura a companie com a api_key correta para gerar nova fingerprint
+				//necessita do plugin ACF ativado
+				$companies = get_field('companies', 'option');
+
+				if (!is_null($companies)) {
+					foreach ($companies as $key => $company) {
+						if ($company['api_key_pagarme'] != '' && $company['api_key_pagarme'] != $this->gateway->api_key) {
+							//gera novo fingerprint com outra chave
+							$newfingerprint = sha1( $ipn_response['id'] . '#' . $company['api_key_pagarme'] );
+							//nova chance de verificar
+							if ($newfingerprint === $ipn_response['fingerprint']) {
+								return true;
+							}
+						}
+					}
+				}
 			}
 		}
 
